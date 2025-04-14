@@ -86,14 +86,14 @@ Each service is a standalone Spring Boot application.
 ### 🧵 Terminal 1 — Run Order Service:
 
 ```bash
-cd order
+cd Order
 mvn spring-boot:run
 ```
 
 ### 🧵 Terminal 2 — Run Customer Service:
 
 ```bash
-cd customer-service
+cd Customer
 mvn spring-boot:run
 ```
 
