@@ -16,6 +16,12 @@ Ensure the following are installed on your machine:
 
 ---
 
+## 🔽 Clone the Repository
+
+```bash
+cd SpringBootEndterm
+
+git clone https://github.com/Otakanutyy/SpringBootEndterm.git
 
 Access PostgreSQL CLI:
 
