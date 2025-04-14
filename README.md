@@ -1,12 +1,17 @@
 # 🛠️ Spring Boot Endterm Project
 
-This project demonstrates a microservices architecture using **Spring Boot**, **Kafka**, **PostgreSQL**, and **Docker**. It includes two main services: **Order Service** and **Customer Service**, connected via Kafka using the **Transactional Outbox Pattern**.
+This project demonstrates a **microservices architecture** using **Spring Boot**, **Kafka**, **PostgreSQL**, and **Docker**. It includes two main services:
+
+- **Order Service**
+- **Customer Service**
+
+They are connected via Kafka using the **Transactional Outbox Pattern**.
 
 ---
 
 ## ✅ Prerequisites
 
-Ensure the following are installed on your machine:
+Ensure the following tools are installed on your machine:
 
 - Java 17 or higher  
 - Maven  
@@ -16,24 +21,24 @@ Ensure the following are installed on your machine:
 
 ---
 
-## 🔽 Clone the Repository
+## 🗄️ Set Up PostgreSQL
+
+### Access PostgreSQL CLI:
 
 ```bash
-cd SpringBootEndterm
-
-git clone https://github.com/Otakanutyy/SpringBootEndterm.git
-
-Access PostgreSQL CLI:
-
 psql -U postgres
+```
 
-Create required databases:
+### Create Required Databases:
 
+```sql
 CREATE DATABASE order_db;
 CREATE DATABASE customer_db;
+```
 
-Create orders table in order_db:
+### Create `orders` Table in `order_db`:
 
+```sql
 \c order_db
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
@@ -41,9 +46,11 @@ CREATE TABLE orders (
     quantity INT,
     price NUMERIC(10,2)
 );
+```
 
-Create payment table in customer_db:
+### Create `payment` Table in `customer_db`:
 
+```sql
 \c customer_db
 CREATE TABLE payment (
     id SERIAL PRIMARY KEY,
@@ -51,55 +58,86 @@ CREATE TABLE payment (
     amount NUMERIC(10,2),
     status VARCHAR(50)
 );
+```
 
-exit:
+### Exit PostgreSQL:
+
+```sql
 \q
+```
 
-🚀 Start Kafka Using Docker Compose
-1. Navigate to Kafka Docker directory:
-   cd kafka-docker
-2. Start Kafka services:
-   docker-compose up -d
+---
 
+## 🐳 Start Kafka Using Docker Compose
 
-▶️ Run the Microservices
+```bash
+cd kafka-docker
+docker-compose up -d
+```
+
+Ensure that Kafka and Zookeeper containers are running successfully.
+
+---
+
+## ▶️ Run the Microservices
+
 Each service is a standalone Spring Boot application.
 
-1. Navigate to each service directory:
+### 🧵 Terminal 1 — Run Order Service:
 
-Terminal1:
+```bash
 cd order
 mvn spring-boot:run
+```
 
+### 🧵 Terminal 2 — Run Customer Service:
 
-Terminal2
+```bash
 cd customer-service
 mvn spring-boot:run
+```
 
+---
 
+## 🧪 Testing the Application
 
-🧪 Testing the Application
-With both services running:
+Once both services are running, send a POST request to create a new order:
 
-Send a POST request to create a new order:
-
-'''bash
+```bash
 curl -X POST http://localhost:8080/api/orders \
 -H "Content-Type: application/json" \
 -d '{"product_name":"Widget","quantity":10,"price":19.99}'
+```
 
+Expected outcome:
 
+- A new order is created
+- A corresponding payment is triggered and saved in `customer_db` via Kafka
 
-📘 Additional Notes
-Ensure application.properties in both services are configured with:
+---
 
-src/main/resources/application.properties
+## 📘 Additional Notes
+
+Ensure that `application.properties` in both services contain the following configuration (with respective database names):
+
+```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/customer_db
 spring.datasource.username=postgres
-spring.datasource.password=your_password   #Maybe Different
+spring.datasource.password=your_password
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+```
 
+Replace `customer_db` with `order_db` in the Order Service.
 
+---
+
+## ✅ Summary
+
+- Two Spring Boot services: Order & Customer  
+- PostgreSQL for persistence  
+- Kafka for async communication  
+- Docker Compose for Kafka setup  
+- Transactional Outbox pattern for reliability  
