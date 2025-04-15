@@ -1,6 +1,6 @@
 package com.example.Customer.configuration;
 
-import com.example.Customer.services.PaymentService;
+import com.example.Customer.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;

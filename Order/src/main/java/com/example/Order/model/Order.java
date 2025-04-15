@@ -1,4 +1,4 @@
-package com.example.Order.models;
+package com.example.Order.model;
 
 import jakarta.persistence.*;
 
@@ -34,8 +34,6 @@ public class Order {
         this.quantity = quantity;
         this.price = price;
     }
-    // Getters and Setters ...
-    // (If using Lombok, use @Data or @Getter/@Setter)
 
     public Long getId() {
         return id;

@@ -1,7 +1,7 @@
-package com.example.Order.contollers;
+package com.example.Order.contoller;
 
-import com.example.Order.models.Order;
-import com.example.Order.services.OrderService;
+import com.example.Order.model.Order;
+import com.example.Order.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -1,6 +1,6 @@
 package com.example.Customer.controller;
 
-import com.example.Customer.models.Payment;
+import com.example.Customer.model.Payment;
 import com.example.Customer.repo.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

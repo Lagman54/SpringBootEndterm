@@ -1,7 +1,7 @@
-package com.example.Order.services;
+package com.example.Order.service;
 
 
-import com.example.Order.models.Order;
+import com.example.Order.model.Order;
 import com.example.Order.repo.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
