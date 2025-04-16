@@ -1,4 +1,4 @@
-package com.example.Order.repo;
+package com.example.Order.repository;
 
 
 import com.example.Order.model.Order;
