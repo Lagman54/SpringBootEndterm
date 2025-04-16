@@ -19,7 +19,6 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    // Create a new order (simple example)
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
         return orderService.createOrder(order);
