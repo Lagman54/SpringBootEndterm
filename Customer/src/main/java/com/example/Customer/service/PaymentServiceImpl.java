@@ -30,7 +30,7 @@ public class PaymentServiceImpl implements PaymentService {
             1) Если заказ оплачен успеншо ->
             kafkaTemplate.send(paymentResultTopic, new CustomerPaymentSuccess(orderId, customerId));
             2) Если customer с данным id не найден ->
-            kafkaTemplate.send(paymentResultTopic, new CustomerNotFound(orderId, customerId));
+            kafkaTemplate.send(paymentResultTopic, new CustomerNotFound(customerId, orderId));
             3) Если у customer не хватает баланса ->
             kafkaTemplate.send(paymentResultTopic, new CustomerInsufficientBalance(orderId, customerId, requiredAmount, actualBalance));
          */
