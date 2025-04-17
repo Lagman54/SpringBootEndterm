@@ -1,8 +1,9 @@
 CREATE TABLE IF NOT EXISTS orders
 (
-    id           SERIAL PRIMARY KEY,
-    product_name VARCHAR(255),
-    quantity     INT,
-    price        NUMERIC(10, 2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id               SERIAL PRIMARY KEY,
+    product_name     TEXT             NOT NULL,
+    order_total      DOUBLE PRECISION NOT NULL,
+    customer_id      BIGINT           NOT NULL,
+    state            TEXT             NOT NULL,
+    rejection_reason TEXT
 );

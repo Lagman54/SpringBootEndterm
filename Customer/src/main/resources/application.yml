@@ -1,6 +1,6 @@
 spring:
   application:
-    name: Order
+    name: Customer
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -10,7 +10,7 @@ spring:
           servers: localhost:9092
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/order_db
+    url: jdbc:postgresql://localhost:5432/customer_db
     username: dev_user
     password: secret123
 
@@ -21,9 +21,10 @@ spring:
 app:
   kafka:
     payment-result-topic: "payment-result-topic"
-    delivery-result-topic: "delivery-result-topic"
     order-created-topic: "order-created-topic"
-    customer-payment-result-group: "customer-payment-result-group"
+    order-cancelled-topic: "order-cancelled-topic"
+    order-created-consumers: "order-created-consumers-group"
+    order-cancelled-consumers: "order-cancelled-consumers-group"
 
 server:
-  port: 8080
+  port: 8082

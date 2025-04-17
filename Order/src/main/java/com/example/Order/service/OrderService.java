@@ -1,31 +1,35 @@
 package com.example.Order.service;
 
-
 import com.example.Order.model.Order;
+import com.example.Order.model.commands.CustomerPayCommand;
 import com.example.Order.repository.OrderRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class OrderService {
+    private static final Logger log = LogManager.getLogger(OrderService.class);
 
-    @Value("${app.kafka.orders-topic}")
-    private String orderTopic;
+    @Value("${app.kafka.order-created-topic}")
+    private String paymentTopic;
 
     private final OrderRepository orderRepository;
-    private final KafkaTemplate<String, Order> kafkaTemplate;
+    private final KafkaTemplate<String, CustomerPayCommand> kafkaTemplate;
+
+    public OrderService(OrderRepository orderRepository, KafkaTemplate<String, CustomerPayCommand> kafkaTemplate) {
+        this.orderRepository = orderRepository;
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     public Order createOrder(Order order) {
+        log.info("Received request to order: {}", order);
         Order savedOrder = orderRepository.save(order);
-
-        kafkaTemplate.send(orderTopic, savedOrder);
-
-        log.info("Order created: {}", savedOrder);
+        CustomerPayCommand command = new CustomerPayCommand(order.getCustomerId(), order.getId(), order.getOrderTotal());
+        kafkaTemplate.send(paymentTopic, command);
+        log.info("Order created and sent for payment: {}", savedOrder);
         return savedOrder;
     }
 }

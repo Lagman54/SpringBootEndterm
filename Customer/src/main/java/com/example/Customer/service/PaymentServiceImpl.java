@@ -1,34 +1,39 @@
 package com.example.Customer.service;
 
 
-import com.example.Customer.model.Payment;
+import com.example.Customer.model.OrderDto;
+import com.example.Customer.model.replies.CustomerPaymentResult;
 import com.example.Customer.repo.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
+    @Value("${app.kafka.payment-result-topic}")
+    private String paymentResultTopic;
+
     private final PaymentRepository paymentRepository;
+    private final KafkaTemplate<String, CustomerPaymentResult> kafkaTemplate;
 
     @Autowired
-    public PaymentServiceImpl(PaymentRepository paymentRepository) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, KafkaTemplate<String, CustomerPaymentResult> kafkaTemplate) {
         this.paymentRepository = paymentRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
-    public void processPaymentEvent(String message) {
-        // Example: parse the message "ORDER_CREATED: <id>"
-        // Very simplified string parsing logic:
-        if (message.startsWith("ORDER_CREATED:")) {
-            String orderIdStr = message.replace("ORDER_CREATED:", "").trim();
-            Long orderId = Long.parseLong(orderIdStr);
+    public void processPayment(OrderDto order) {
+        /* TODO оплатить заказ и отправить соответсвующий message в kafka
+            1) Если заказ оплачен успеншо ->
+            kafkaTemplate.send(paymentResultTopic, new CustomerPaymentSuccess(orderId, customerId));
+            2) Если customer с данным id не найден ->
+            kafkaTemplate.send(paymentResultTopic, new CustomerNotFound(orderId, customerId));
+            3) Если у customer не хватает баланса ->
+            kafkaTemplate.send(paymentResultTopic, new CustomerInsufficientBalance(orderId, customerId, requiredAmount, actualBalance));
+         */
 
-            // Just create a Payment in "PENDING" status for that Order
-            Payment payment = new Payment(orderId, 100.0, "PENDING");
-            paymentRepository.save(payment);
-
-            System.out.println("Created Payment record for orderId=" + orderId);
-        }
     }
 }
