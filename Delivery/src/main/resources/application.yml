@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: Delivery
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/delivery_db
+    username: dev_user
+    password: secret123
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    admin:
+      properties:
+        bootstrap:
+          servers: localhost:9092
+
+app:
+  kafka:
+    orders-topic: "order-events"
+    orders-groupId: "order-group-id"
+
+server:
+  port: 8081
