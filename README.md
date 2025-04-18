@@ -9,7 +9,7 @@ CREATE DATABASE delivery_db;
 ### Create dev_user:
 ```postgresql
 CREATE USER dev_user WITH PASSWORD 'secret123';
-ALTER USER dev_user CREATEDB;
+ALTER USER dev_user WITH SUPERUSER;
 ```
 
 # Start kafka

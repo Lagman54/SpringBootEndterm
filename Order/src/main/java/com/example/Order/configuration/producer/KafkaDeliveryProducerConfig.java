@@ -1,7 +1,7 @@
-package com.example.Order.configuration;
+package com.example.Order.configuration.producer;
 
-import com.example.Order.model.Order;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.Order.model.commands.CreateDeliveryCommand;
+import com.example.Order.model.commands.CustomerPayCommand;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,27 +16,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaProducerConfig {
+public class KafkaDeliveryProducerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, Order> kafkaCreatePostProducerFactory(ObjectMapper objectMapper) {
+    public ProducerFactory<String, CreateDeliveryCommand> kafkaCreateDeliveryProducerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
-        return new DefaultKafkaProducerFactory<>(
-                config,
-                new StringSerializer(),
-                new JsonSerializer<>(objectMapper)
-        );
+        return new DefaultKafkaProducerFactory<>(config);
     }
 
-    @Bean
-    public KafkaTemplate<String, Order> kafkaTemplate(ProducerFactory<String, Order> kafkaOrderProducerFactory) {
-        return new KafkaTemplate<>(kafkaOrderProducerFactory);
+    @Bean(name="createDeliveryCommandKafkaTemplate")
+    public KafkaTemplate<String, CreateDeliveryCommand> createDeliveryCommandKafkaTemplate() {
+        return new KafkaTemplate<>(kafkaCreateDeliveryProducerFactory());
     }
 }
