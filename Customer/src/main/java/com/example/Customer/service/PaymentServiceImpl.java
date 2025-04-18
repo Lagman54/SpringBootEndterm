@@ -3,7 +3,7 @@ package com.example.Customer.service;
 
 import com.example.Customer.model.OrderDto;
 import com.example.Customer.model.replies.CustomerPaymentResult;
-import com.example.Customer.repo.PaymentRepository;
+import com.example.Customer.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;

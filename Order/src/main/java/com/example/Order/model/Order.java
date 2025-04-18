@@ -1,11 +1,15 @@
 package com.example.Order.model;
 
+import com.example.Order.service.OrderService;
 import jakarta.persistence.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "orders")
 @Access(AccessType.FIELD)
 public class Order {
+    private static final Logger log = LogManager.getLogger(OrderService.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +36,8 @@ public class Order {
     public void reject(RejectionReason rejectionReason) {
         this.state = OrderState.REJECTED;
         this.rejectionReason = rejectionReason;
+        log.info("Order rejected ID: {}", this.id);
+
     }
 
     public void approve() {

@@ -1,4 +1,4 @@
-package com.example.Order.configuration;
+package com.example.Order.configuration.producer;
 
 import com.example.Order.model.commands.CustomerPayCommand;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaProducerConfig {
+public class KafkaPaymentProducerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -31,7 +31,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, CustomerPayCommand> kafkaTemplate() {
+    public KafkaTemplate<String, CustomerPayCommand> customerPayCommandKafkaTemplate() {
         return new KafkaTemplate<>(kafkaCreateOrderProducerFactory());
     }
 }
