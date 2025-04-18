@@ -26,6 +26,4 @@ public class KafkaEventsListener {
         log.info("Received order: {}", order);
         paymentService.processPayment(order);
     }
-
-
 }

@@ -16,8 +16,9 @@ spring:
 
 app:
   kafka:
-    orders-topic: "order-events"
-    orders-groupId: "order-group-id"
+    delivery-created-topic: "delivery-created-topic"
+    delivery-created-consumers: "delivery-created-group-id"
+    delivery-result-topic: "delivery-result-topic"
 
 server:
   port: 8081

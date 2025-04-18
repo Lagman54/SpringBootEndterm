@@ -1,6 +1,8 @@
 package com.example.Order.service;
 
 import com.example.Order.model.Order;
+import com.example.Order.model.RejectionReason;
+import com.example.Order.model.commands.CreateDeliveryCommand;
 import com.example.Order.model.commands.CustomerPayCommand;
 import com.example.Order.repository.OrderRepository;
 import org.apache.logging.log4j.LogManager;
@@ -16,20 +18,43 @@ public class OrderService {
     @Value("${app.kafka.order-created-topic}")
     private String paymentTopic;
 
-    private final OrderRepository orderRepository;
-    private final KafkaTemplate<String, CustomerPayCommand> kafkaTemplate;
+    @Value("${app.kafka.delivery-created-topic}")
+    private String deliveryTopic;
 
-    public OrderService(OrderRepository orderRepository, KafkaTemplate<String, CustomerPayCommand> kafkaTemplate) {
+    private final OrderRepository orderRepository;
+    private final KafkaTemplate<String, CustomerPayCommand> payCommandKafkaTemplate;
+    private final KafkaTemplate<String, CreateDeliveryCommand> deliveryCommandKafkaTemplate;
+
+    public OrderService(OrderRepository orderRepository, KafkaTemplate<String, CustomerPayCommand> kafkaTemplate, KafkaTemplate<String, CustomerPayCommand> payCommandKafkaTemplate, KafkaTemplate<String, CreateDeliveryCommand> deliveryCommandKafkaTemplate) {
         this.orderRepository = orderRepository;
-        this.kafkaTemplate = kafkaTemplate;
+        this.payCommandKafkaTemplate = payCommandKafkaTemplate;
+        this.deliveryCommandKafkaTemplate = deliveryCommandKafkaTemplate;
     }
 
     public Order createOrder(Order order) {
-        log.info("Received request to order: {}", order);
         Order savedOrder = orderRepository.save(order);
         CustomerPayCommand command = new CustomerPayCommand(order.getCustomerId(), order.getId(), order.getOrderTotal());
-        kafkaTemplate.send(paymentTopic, command);
+        payCommandKafkaTemplate.send(paymentTopic, command);
         log.info("Order created and sent for payment: {}", savedOrder);
         return savedOrder;
+    }
+
+    public void rejectOrder(Long orderId, RejectionReason rejectionReason) {
+        Order order = orderRepository.findById(orderId).get();
+        order.reject(rejectionReason);
+        orderRepository.save(order);
+    }
+
+    public void approveOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId).get();
+        order.approve();
+        orderRepository.save(order);
+    }
+
+    public void createDelivery(Long orderId) {
+        Order order = orderRepository.findById(orderId).get();
+        CreateDeliveryCommand command = new CreateDeliveryCommand(order.getId(), order.getCustomerId(), "TODO");
+        deliveryCommandKafkaTemplate.send(deliveryTopic, command);
+        log.info("Order sent for delivery: {}", order);
     }
 }

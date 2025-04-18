@@ -3,6 +3,7 @@ package com.example.Customer.service;
 
 import com.example.Customer.model.OrderDto;
 import com.example.Customer.model.replies.CustomerPaymentResult;
+import com.example.Customer.model.replies.CustomerPaymentSuccess;
 import com.example.Customer.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,5 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
             kafkaTemplate.send(paymentResultTopic, new CustomerInsufficientBalance(orderId, customerId, requiredAmount, actualBalance));
          */
 
+        //for testing purposes
+        kafkaTemplate.send(paymentResultTopic, new CustomerPaymentSuccess(order.orderId(), order.customerId()));
     }
 }

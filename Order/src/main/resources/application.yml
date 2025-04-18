@@ -23,7 +23,9 @@ app:
     payment-result-topic: "payment-result-topic"
     delivery-result-topic: "delivery-result-topic"
     order-created-topic: "order-created-topic"
+    delivery-created-topic: "delivery-created-topic"
     customer-payment-result-group: "customer-payment-result-group"
+    delivery-result-group: "delivery-result-group"
 
 server:
   port: 8080

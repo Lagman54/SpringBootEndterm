@@ -1,10 +1,6 @@
 package com.example.Order.configuration.consumer;
 
-
-import com.example.Order.model.replies.CustomerInsufficientBalance;
-import com.example.Order.model.replies.CustomerNotFound;
-import com.example.Order.model.replies.CustomerPaymentResult;
-import com.example.Order.model.replies.CustomerPaymentSuccess;
+import com.example.Order.model.replies.*;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,17 +16,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaCustomerPaymentResultConsumerConfig {
+public class KafkaDeliveryResultConsumerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${app.kafka.customer-payment-result-group}")
+    @Value("${app.kafka.delivery-result-group}")
     private String groupId;
 
     @Bean
-    public ConsumerFactory<String, CustomerPaymentResult> customerPaymentResultConsumerFactory() {
-        JsonDeserializer<CustomerPaymentResult> deserializer = new JsonDeserializer<>(CustomerPaymentResult.class);
+    public ConsumerFactory<String, DeliveryResult> deliveryResultConsumerFactory() {
+        JsonDeserializer<DeliveryResult> deserializer = new JsonDeserializer<>(DeliveryResult.class);
         deserializer.addTrustedPackages("*");
         deserializer.setTypeMapper(new CustomTypeMapper());
         deserializer.setUseTypeMapperForKey(false);
@@ -47,11 +43,11 @@ public class KafkaCustomerPaymentResultConsumerConfig {
         );
     }
 
-    @Bean(name = "customerPaymentResultListenerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, CustomerPaymentResult> customerPaymentResultListenerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, CustomerPaymentResult> factory =
+    @Bean(name = "deliveryResultListenerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, DeliveryResult> deliveryResultListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, DeliveryResult> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(customerPaymentResultConsumerFactory());
+        factory.setConsumerFactory(deliveryResultConsumerFactory());
         return factory;
     }
 
@@ -59,14 +55,12 @@ public class KafkaCustomerPaymentResultConsumerConfig {
 
         public CustomTypeMapper() {
             Map<String, Class<?>> idClassMapping = new HashMap<>();
-            idClassMapping.put("com.example.Customer.model.replies.CustomerPaymentSuccess", CustomerPaymentSuccess.class);
-            idClassMapping.put("com.example.Customer.model.replies.CustomerInsufficientBalance", CustomerInsufficientBalance.class);
-            idClassMapping.put("com.example.Customer.model.replies.CustomerNotFound", CustomerNotFound.class);
+            idClassMapping.put("com.example.delivery.model.replies.DeliverySuccess", DeliverySuccess.class);
+            idClassMapping.put("com.example.delivery.model.replies.DeliveryFailed", DeliveryFailed.class);
 
             setIdClassMapping(idClassMapping);
             setTypePrecedence(TypePrecedence.TYPE_ID);
         }
     }
-
 
 }

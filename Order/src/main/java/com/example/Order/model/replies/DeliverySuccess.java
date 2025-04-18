@@ -1,4 +1,4 @@
 package com.example.Order.model.replies;
 
-public record DeliverySuccess() implements DeliveryResult{
+public record DeliverySuccess(Long orderId, Long customerId) implements DeliveryResult{
 }
