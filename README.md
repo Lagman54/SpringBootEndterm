@@ -1,10 +1,10 @@
-# SpringBootEndterm Project 
+# SpringBootEndterm Project 🚀
 
 This project is a microservices-based application built with Spring Boot. It includes separate services for `Order` and `Delivery`, integrated via Kafka. The project uses PostgreSQL for persistence and Flyway for database migrations.
 
 ---
 
-##  Modules
+## 📁 Modules
 
 - `Order`: Handles order creation and communication with the Delivery service.
 - `Delivery`: Listens for order events and schedules deliveries.
@@ -12,9 +12,9 @@ This project is a microservices-based application built with Spring Boot. It inc
 
 ---
 
-##  Setup Instructions
+## 🛠️ Setup Instructions
 
-###  Prerequisites
+### ✅ Prerequisites
 - Docker + Docker Compose
 - Java 17
 - Maven
@@ -22,7 +22,7 @@ This project is a microservices-based application built with Spring Boot. It inc
 
 ---
 
-##  Setup Database
+## 🧪 Setup Database
 
 ### 1. Create databases (drop schemas if they exist):
 
@@ -38,14 +38,14 @@ CREATE USER dev_user WITH PASSWORD 'secret123';
 ALTER ROLE dev_user WITH SUPERUSER;
 ```
 
->  Flyway will run automatically on application startup using the SQL files from:
+> ⚠️ Flyway will run automatically on application startup using the SQL files from:
 ```
 delivery/src/main/resources/db/migration
 ```
 
 ---
 
-## 🛰 Start Kafka & Zookeeper
+## 🛰️ Start Kafka & Zookeeper
 
 From the `docker/` directory:
 
@@ -55,7 +55,7 @@ docker-compose up
 
 ---
 
-##  Running the Services
+## ▶️ Running the Services
 
 Navigate into each service (`Order`, `Delivery`) and run one of the following:
 
@@ -71,7 +71,7 @@ With Maven Wrapper:
 
 ---
 
-##  Tech Stack
+## 🧰 Tech Stack
 
 - Java 17
 - Spring Boot 3.4.4
@@ -82,14 +82,10 @@ With Maven Wrapper:
 
 ---
 
-##  .gitignore Notes
+## 📄 .gitignore Notes
 
 The `.gitignore` is configured to exclude:
 - `target/` directories
 - IntelliJ `.idea/`, `.iml` files
 - Maven wrapper binaries
 - Logs, OS-generated files, `.DS_Store`
-
----
-
-✅ You're good to go! Run it, test it, ship it! ✨
