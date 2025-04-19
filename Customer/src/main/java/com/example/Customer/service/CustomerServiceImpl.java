@@ -1,5 +1,6 @@
 package com.example.Customer.service;
 
+import com.example.Customer.listener.KafkaEventsListener;
 import com.example.Customer.model.Customer;
 import com.example.Customer.model.OrderDto;
 import com.example.Customer.model.Payment;
@@ -8,13 +9,16 @@ import com.example.Customer.model.replies.CustomerNotFound;
 import com.example.Customer.model.replies.CustomerPaymentResult;
 import com.example.Customer.model.replies.CustomerPaymentSuccess;
 import com.example.Customer.repo.CustomerRepository;
-import com.example.Customer.repo.PaymentRepository;
+import com.example.Customer.repository.PaymentRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
+    private static final Logger log = LogManager.getLogger(CustomerServiceImpl.class);
 
     private final PaymentRepository paymentRepository;
     private final CustomerRepository customerRepository;
@@ -50,6 +54,7 @@ public class CustomerServiceImpl implements CustomerService {
                     .orElse(null);
 
             if (customer == null) {
+                log.info("Customer with id {} not found", customerId);
                 kafkaTemplate.send(paymentResultTopic,
                         new CustomerNotFound(customerId, orderId));
                 return;
@@ -57,6 +62,7 @@ public class CustomerServiceImpl implements CustomerService {
 
             Long balance = customer.getBalance();
             if (balance < orderTotal) {
+                log.info("Customer with id {} balance {} not enough", customerId, balance);
                 kafkaTemplate.send(paymentResultTopic,
                         new CustomerInsufficientBalance(orderId, customerId, orderTotal, balance));
                 return;
@@ -70,6 +76,7 @@ public class CustomerServiceImpl implements CustomerService {
             Payment payment = new Payment(orderId, orderTotal, "PAID", customer);
             paymentRepository.save(payment);
 
+            log.info("Customer with id {} payment success", customerId);
             kafkaTemplate.send(paymentResultTopic,
                     new CustomerPaymentSuccess(orderId, customerId));
 
