@@ -1,7 +1,7 @@
 package com.example.Customer.listener;
 
 import com.example.Customer.model.OrderDto;
-import com.example.Customer.service.PaymentService;
+import com.example.Customer.service.CustomerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -11,10 +11,10 @@ import org.springframework.stereotype.Service;
 public class KafkaEventsListener {
     private static final Logger log = LogManager.getLogger(KafkaEventsListener.class);
 
-    private final PaymentService paymentService;
+    private final CustomerService paymentService;
 
-    public KafkaEventsListener(PaymentService paymentService) {
-        this.paymentService = paymentService;
+    public KafkaEventsListener(CustomerService customerService) {
+        this.paymentService = customerService;
     }
 
     @KafkaListener(topics = "${app.kafka.order-created-topic}",

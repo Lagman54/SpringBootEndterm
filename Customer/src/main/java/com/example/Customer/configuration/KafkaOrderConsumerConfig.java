@@ -17,7 +17,6 @@ import java.util.Map;
 @EnableKafka
 @Configuration
 public class KafkaOrderConsumerConfig {
-
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -49,6 +48,4 @@ public class KafkaOrderConsumerConfig {
         factory.setConsumerFactory(orderCreatedConsumerFactory());
         return factory;
     }
-
-
 }
