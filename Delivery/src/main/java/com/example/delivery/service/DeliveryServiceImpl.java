@@ -8,6 +8,8 @@ import com.example.delivery.repository.DeliveryHistoryRepository;
 import com.example.delivery.repository.DeliverySlotRepository;
 import com.example.delivery.model.DeliverySlot;
 import com.example.delivery.model.DeliveryHistory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.util.List;
 
 @Service
 public class DeliveryServiceImpl implements DeliveryService {
+    private static final Logger log = LogManager.getLogger(DeliveryServiceImpl.class);
 
     @Value("${app.kafka.delivery-result-topic}")
     private String resultTopic;
@@ -81,6 +84,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         deliveryHistoryRepository.save(history);
 
+        log.info("Order sent for delivery OrderID:{}, CustomerID:{}", order.orderId(), order.customerId());
         kafkaTemplate.send(resultTopic, new DeliverySuccess(order.orderId(), order.customerId()));
     }
 }

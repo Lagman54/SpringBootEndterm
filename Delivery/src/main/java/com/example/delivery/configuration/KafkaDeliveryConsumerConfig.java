@@ -22,7 +22,7 @@ public class KafkaDeliveryConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${app.kafka.delivery-created-topic}")
+    @Value("${app.kafka.delivery-created-consumers}")
     private String groupId;
 
     @Bean
