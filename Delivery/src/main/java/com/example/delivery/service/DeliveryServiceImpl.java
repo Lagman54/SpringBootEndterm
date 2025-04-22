@@ -74,7 +74,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         DeliveryHistory history = new DeliveryHistory();
         history.setOrderId(order.orderId());
         history.setCustomerId(order.customerId());
-        history.setSlotId(availableSlot.getId());
+        history.setSlot(availableSlot);
         history.setStartTime(availableSlot.getStartTime());
         history.setEndTime(availableSlot.getEndTime());
 

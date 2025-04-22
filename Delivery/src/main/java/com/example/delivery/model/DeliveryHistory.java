@@ -1,7 +1,6 @@
 package com.example.delivery.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalTime;
 
 @Entity
@@ -12,9 +11,15 @@ public class DeliveryHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "order_id")
     private Long orderId;
+
+    @Column(name = "customer_id")
     private Long customerId;
-    private Long slotId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "slot_id") // This defines the foreign key column
+    private DeliverySlot slot;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
@@ -22,8 +27,9 @@ public class DeliveryHistory {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    public DeliveryHistory() {
-    }
+    public DeliveryHistory() {}
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -49,12 +55,12 @@ public class DeliveryHistory {
         this.customerId = customerId;
     }
 
-    public Long getSlotId() {
-        return slotId;
+    public DeliverySlot getSlot() {
+        return slot;
     }
 
-    public void setSlotId(Long slotId) {
-        this.slotId = slotId;
+    public void setSlot(DeliverySlot slot) {
+        this.slot = slot;
     }
 
     public LocalTime getStartTime() {
