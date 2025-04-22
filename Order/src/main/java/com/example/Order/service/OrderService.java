@@ -53,8 +53,8 @@ public class OrderService {
 
     public void createDelivery(Long orderId) {
         Order order = orderRepository.findById(orderId).get();
-        CreateDeliveryCommand command = new CreateDeliveryCommand(order.getId(), order.getCustomerId(), "TODO");
+        CreateDeliveryCommand command = new CreateDeliveryCommand(order.getCustomerId(), order.getId(), "TODO");
         deliveryCommandKafkaTemplate.send(deliveryTopic, command);
-        log.info("Order sent for delivery: {}", order);
+        log.info("Order sent for delivery confirmation: {}", order);
     }
 }
