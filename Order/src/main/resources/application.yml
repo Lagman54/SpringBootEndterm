@@ -27,5 +27,8 @@ app:
     customer-payment-result-group: "customer-payment-result-group"
     delivery-result-group: "delivery-result-group"
 
+  outbox:
+      totalShards: 4
+
 server:
   port: 8080

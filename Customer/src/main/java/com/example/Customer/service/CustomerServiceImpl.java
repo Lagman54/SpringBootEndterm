@@ -1,6 +1,5 @@
 package com.example.Customer.service;
 
-import com.example.Customer.listener.KafkaEventsListener;
 import com.example.Customer.model.Customer;
 import com.example.Customer.model.OrderDto;
 import com.example.Customer.model.Payment;
