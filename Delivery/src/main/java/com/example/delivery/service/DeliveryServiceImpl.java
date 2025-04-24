@@ -1,90 +1,121 @@
 package com.example.delivery.service;
 
+import com.example.delivery.model.DeliveryHistory;
+import com.example.delivery.model.DeliverySlot;
 import com.example.delivery.model.OrderDto;
+import com.example.delivery.model.OutboxEvent;
 import com.example.delivery.model.replies.DeliveryFailed;
 import com.example.delivery.model.replies.DeliveryResult;
 import com.example.delivery.model.replies.DeliverySuccess;
 import com.example.delivery.repository.DeliveryHistoryRepository;
 import com.example.delivery.repository.DeliverySlotRepository;
-import com.example.delivery.model.DeliverySlot;
-import com.example.delivery.model.DeliveryHistory;
+import com.example.delivery.repository.OutboxRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DeliveryServiceImpl implements DeliveryService {
     private static final Logger log = LogManager.getLogger(DeliveryServiceImpl.class);
 
-    @Value("${app.kafka.delivery-result-topic}")
-    private String resultTopic;
-
-    private final KafkaTemplate<String, DeliveryResult> kafkaTemplate;
     private final DeliverySlotRepository deliverySlotRepository;
     private final DeliveryHistoryRepository deliveryHistoryRepository;
+    private final OutboxRepository outboxRepository;
+    private final ObjectMapper objectMapper;
 
-    public DeliveryServiceImpl(KafkaTemplate<String, DeliveryResult> kafkaTemplate,
-                               DeliverySlotRepository deliverySlotRepository,
-                               DeliveryHistoryRepository deliveryHistoryRepository) {
-        this.kafkaTemplate = kafkaTemplate;
-        this.deliverySlotRepository = deliverySlotRepository;
+    public DeliveryServiceImpl(
+            DeliverySlotRepository deliverySlotRepository,
+            DeliveryHistoryRepository deliveryHistoryRepository,
+            OutboxRepository outboxRepository,
+            ObjectMapper objectMapper
+    ) {
+        this.deliverySlotRepository    = deliverySlotRepository;
         this.deliveryHistoryRepository = deliveryHistoryRepository;
-    }
-
-    private boolean isValidAddress(String address) {
-        return address != null &&
-                !address.trim().isEmpty() &&
-                address.length() < 255 &&
-                address.matches("[a-zA-Z0-9 ,.-]+");
+        this.outboxRepository          = outboxRepository;
+        this.objectMapper              = objectMapper;
     }
 
     @Override
     @Transactional
     public void scheduleDelivery(OrderDto order) {
-        // Validate address
+        DeliveryResult resultEvent;
+
+        // 1) Validate address
         if (!isValidAddress(order.address())) {
-            kafkaTemplate.send(resultTopic, new DeliveryFailed(order.orderId(), order.customerId()));
-            return;
-        }
+            resultEvent = new DeliveryFailed(order.orderId(), order.customerId());
+        } else {
+            // 2) Find a free slot
+            List<DeliverySlot> slots = deliverySlotRepository.findAll();
+            DeliverySlot slot = slots.stream()
+                    .filter(s -> s.getQuantity() < s.getMaxQuantity())
+                    .findFirst()
+                    .orElse(null);
 
-        // Find available slot
-        List<DeliverySlot> slots = deliverySlotRepository.findAll();
-        DeliverySlot availableSlot = null;
+            if (slot == null) {
+                resultEvent = new DeliveryFailed(order.orderId(), order.customerId());
+            } else {
+                // 3) Reserve slot and record history
+                slot.setQuantity(slot.getQuantity() + 1);
+                deliverySlotRepository.save(slot);
 
-        for (DeliverySlot slot : slots) {
-            if (slot.getQuantity() < slot.getMaxQuantity()) {
-                availableSlot = slot;
-                break;
+                var history = new DeliveryHistory();
+                history.setOrderId(order.orderId());
+                history.setCustomerId(order.customerId());
+                history.setSlot(slot);
+                history.setStartTime(slot.getStartTime());
+                history.setEndTime(slot.getEndTime());
+                deliveryHistoryRepository.save(history);
+
+                log.info("Scheduled delivery for order {} customer {}", order.orderId(), order.customerId());
+                resultEvent = new DeliverySuccess(order.orderId(), order.customerId());
             }
         }
 
-        // No slot available
-        if (availableSlot == null) {
-            kafkaTemplate.send(resultTopic, new DeliveryFailed(order.orderId(), order.customerId()));
-            return;
+        // 4) Create & save outbox record
+        try {
+            OutboxEvent ev = toOutbox(
+                    resultEvent,
+                    resultEvent instanceof DeliverySuccess
+                            ? "delivery.success"
+                            : "delivery.failed",
+                    order.orderId()
+            );
+            outboxRepository.save(ev);
+        } catch (JsonProcessingException e) {
+            // any exception here will roll back the whole transaction
+            log.error("Failed to enqueue delivery result for order {}", order.orderId(), e);
+            throw new RuntimeException(e);
         }
 
-        // Slot found, increment quantity
-        availableSlot.setQuantity(availableSlot.getQuantity() + 1);
-        deliverySlotRepository.save(availableSlot);
 
-        // Save delivery history clearly using your existing OrderDto record
-        DeliveryHistory history = new DeliveryHistory();
-        history.setOrderId(order.orderId());
-        history.setCustomerId(order.customerId());
-        history.setSlot(availableSlot);
-        history.setStartTime(availableSlot.getStartTime());
-        history.setEndTime(availableSlot.getEndTime());
+    }
 
 
-        deliveryHistoryRepository.save(history);
 
-        log.info("Order sent for delivery OrderID:{}, CustomerID:{}", order.orderId(), order.customerId());
-        kafkaTemplate.send(resultTopic, new DeliverySuccess(order.orderId(), order.customerId()));
+    private boolean isValidAddress(String address) {
+        return address != null &&
+                !address.trim().isEmpty() &&
+                address.length() < 255 &&
+                address.matches("[a-zA-Z0-9 ,.\\-]+");
+    }
+
+    private OutboxEvent toOutbox(Object payloadObj, String type, Long aggregateId)
+            throws JsonProcessingException {
+        OutboxEvent ev = new OutboxEvent();
+        ev.setId(UUID.randomUUID());
+        ev.setAggregateType("delivery");
+        ev.setAggregateId(aggregateId.toString());
+        ev.setType(type);
+        ev.setPayload(objectMapper.writeValueAsString(payloadObj));
+        ev.setCreatedAt(LocalDateTime.now());
+        ev.setSent(false);
+        return ev;
     }
 }

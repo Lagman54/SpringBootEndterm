@@ -2,26 +2,33 @@ package com.example.Customer.service;
 
 import com.example.Customer.model.Customer;
 import com.example.Customer.model.OrderDto;
+import com.example.Customer.model.OutboxEvent;
 import com.example.Customer.model.Payment;
 import com.example.Customer.model.replies.CustomerInsufficientBalance;
 import com.example.Customer.model.replies.CustomerNotFound;
-import com.example.Customer.model.replies.CustomerPaymentResult;
 import com.example.Customer.model.replies.CustomerPaymentSuccess;
 import com.example.Customer.repo.CustomerRepository;
+import com.example.Customer.repository.OutboxRepository;
 import com.example.Customer.repository.PaymentRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.transaction.annotation.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
+
     private static final Logger log = LogManager.getLogger(CustomerServiceImpl.class);
 
     private final PaymentRepository paymentRepository;
     private final CustomerRepository customerRepository;
-    private final KafkaTemplate<String, CustomerPaymentResult> kafkaTemplate;
+    private final OutboxRepository outboxRepository;
+    private final ObjectMapper objectMapper;
 
     @Value("${app.kafka.payment-result-topic}")
     private String paymentResultTopic;
@@ -29,11 +36,13 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerServiceImpl(
             PaymentRepository paymentRepository,
             CustomerRepository customerRepository,
-            KafkaTemplate<String, CustomerPaymentResult> kafkaTemplate
+            OutboxRepository outboxRepository,
+            ObjectMapper objectMapper
     ) {
         this.paymentRepository = paymentRepository;
         this.customerRepository = customerRepository;
-        this.kafkaTemplate = kafkaTemplate;
+        this.outboxRepository = outboxRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -41,8 +50,8 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.save(customer);
     }
 
-
     @Override
+    @Transactional
     public void processPayment(OrderDto order) {
         Long customerId = order.customerId();
         Long orderId = order.orderId();
@@ -54,16 +63,22 @@ public class CustomerServiceImpl implements CustomerService {
 
             if (customer == null) {
                 log.info("Customer with id {} not found", customerId);
-                kafkaTemplate.send(paymentResultTopic,
-                        new CustomerNotFound(customerId, orderId));
+                outboxRepository.save(toOutbox(
+                        new CustomerNotFound(customerId, orderId),
+                        "customer.payment.not_found",
+                        orderId
+                ));
                 return;
             }
 
             Long balance = customer.getBalance();
             if (balance < orderTotal) {
                 log.info("Customer with id {} balance {} not enough", customerId, balance);
-                kafkaTemplate.send(paymentResultTopic,
-                        new CustomerInsufficientBalance(orderId, customerId, orderTotal, balance));
+                outboxRepository.save(toOutbox(
+                        new CustomerInsufficientBalance(orderId, customerId, orderTotal, balance),
+                        "customer.payment.insufficient",
+                        orderId
+                ));
                 return;
             }
 
@@ -76,12 +91,27 @@ public class CustomerServiceImpl implements CustomerService {
             paymentRepository.save(payment);
 
             log.info("Customer with id {} payment success", customerId);
-            kafkaTemplate.send(paymentResultTopic,
-                    new CustomerPaymentSuccess(orderId, customerId));
+
+            outboxRepository.save(toOutbox(
+                    new CustomerPaymentSuccess(orderId, customerId),
+                    "customer.payment.success",
+                    orderId
+            ));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            // Optional: add retry, dead-letter queue, or failure report
+            log.error("Failed to process payment for order {}", orderId, e);
+            // Optionally log an outbox failure event or track error metrics
         }
     }
+
+    private OutboxEvent toOutbox(Object eventObject, String type, Long orderId) throws JsonProcessingException {
+        OutboxEvent event = new OutboxEvent();
+        event.setId(UUID.randomUUID());
+        event.setAggregateType("customer");
+        event.setAggregateId(orderId.toString());
+        event.setType(type);
+        event.setPayload(objectMapper.writeValueAsString(eventObject)); // 👈 JUST STRING
+        return event;
+    }
+
 }
