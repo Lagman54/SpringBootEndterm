@@ -18,6 +18,9 @@ public class OutboxProcessor {
     @Value("${app.outbox.totalShards:4}")
     private int totalShards;
 
+    @Value("${app.outbox.interval:1}")
+    private int interval;
+
     private final OutboxService outboxService;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
@@ -38,7 +41,7 @@ public class OutboxProcessor {
             int finalShard = shard;
             scheduler.scheduleAtFixedRate(
                     () -> outboxService.processShard(finalShard),
-                    0, 15, TimeUnit.SECONDS
+                    0, interval, TimeUnit.SECONDS
             );
         }
     }

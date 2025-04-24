@@ -29,6 +29,7 @@ app:
 
   outbox:
       totalShards: 4
+      interval: 1
 
 server:
   port: 8080

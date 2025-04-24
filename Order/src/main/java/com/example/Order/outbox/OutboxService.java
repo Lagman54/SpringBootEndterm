@@ -23,7 +23,7 @@ public class OutboxService {
     }
 
     public void processShard(int shard) {
-        System.out.println("Processing shard " + shard + " on " + Thread.currentThread().getName());
+//        System.out.println("Processing shard " + shard + " on " + Thread.currentThread().getName());
 
         long lastId = offsetRepository.getLastProcessedId(shard);
         List<OutboxRecord> records = repository.pollShard(shard, lastId);

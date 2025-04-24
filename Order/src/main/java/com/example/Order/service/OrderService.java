@@ -65,16 +65,6 @@ public class OrderService {
         record.setShardKey(shardUtils.calculateShard(order.getId()));
 
         outboxRepository.save(record);
-//        CustomerPayCommand command = new CustomerPayCommand(order.getCustomerId(), order.getId(), order.getOrderTotal());
-//
-//        log.info("Order created: {}. Trying to send for payment.", savedOrder);
-//        CompletableFuture<SendResult<String, CustomerPayCommand>> future = payCommandKafkaTemplate.send(paymentTopic, command);
-//        future.thenAccept(result -> {
-//            log.info("Order was sent for payment: {}", savedOrder);
-//        }).exceptionally(ex -> {
-//            log.error("Failed sending orderID={} for payment: {}", order.getId(), ex.getMessage());
-//            return null;
-//        });
         return savedOrder;
     }
 
