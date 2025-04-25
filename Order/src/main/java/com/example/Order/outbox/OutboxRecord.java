@@ -22,9 +22,30 @@ public class OutboxRecord {
     @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "processed_at")
-    private Instant processedAt;
+    @Column(name = "retry_time", insertable = false)
+    private Instant retry_time;
 
+    private boolean is_sent;
+
+    public Instant getRetry_time() {
+        return retry_time;
+    }
+
+    public void setRetry_time(Instant retry_time) {
+        if (retry_time != null) {
+            this.retry_time = retry_time;
+        } else {
+            throw new IllegalArgumentException("retry_time is null");
+        }
+    }
+
+    public boolean isIs_sent() {
+        return is_sent;
+    }
+
+    public void setIs_sent(boolean is_sent) {
+        this.is_sent = is_sent;
+    }
 
     private int shardKey;
 
@@ -39,7 +60,6 @@ public class OutboxRecord {
                 ", messageType=" + messageType +
                 ", payload='" + payload + '\'' +
                 ", createdAt=" + createdAt +
-                ", processedAt=" + processedAt +
                 ", shardKey=" + shardKey +
                 '}';
     }
@@ -66,14 +86,6 @@ public class OutboxRecord {
 
     public Instant getCreatedAt() {
         return createdAt;
-    }
-
-    public Instant getProcessedAt() {
-        return processedAt;
-    }
-
-    public void setProcessedAt(Instant processedAt) {
-        this.processedAt = processedAt;
     }
 
     public int getShardKey() {

@@ -51,6 +51,7 @@ public class OrderService {
     @Transactional
     public Order createOrder(Order order) {
         Order savedOrder = orderRepository.save(order);
+        log.info("Received new order: {}", savedOrder);
         CustomerPayCommand command = new CustomerPayCommand(order.getCustomerId(), order.getId(), order.getOrderTotal());
 
         OutboxRecord record = new OutboxRecord();
@@ -63,7 +64,7 @@ public class OrderService {
         }
 
         record.setShardKey(shardUtils.calculateShard(order.getId()));
-
+//        int x = 1 / 0;
         outboxRepository.save(record);
         return savedOrder;
     }
@@ -80,17 +81,23 @@ public class OrderService {
         orderRepository.save(order);
     }
 
+    @Transactional
     public void createDelivery(Long orderId) {
         Order order = orderRepository.findById(orderId).get();
+        log.info("Create delivery request for order: {}", order);
         CreateDeliveryCommand command = new CreateDeliveryCommand(order.getCustomerId(), order.getId(), "TODO");
 
-        log.info("Trying to send for delivery: orderID={}", order.getId());
-        CompletableFuture<SendResult<String, CreateDeliveryCommand>> future = deliveryCommandKafkaTemplate.send(deliveryTopic, command);
-        future.thenAccept(result -> {
-            log.info("Order was sent for delivery: orderID={}", orderId);
-        }).exceptionally(ex -> {
-            log.error("Failed sending orderID={} for delivery: {}", orderId, ex.getMessage());
-            return null;
-        });
+        OutboxRecord record = new OutboxRecord();
+        record.setMessageType(MessageType.CREATE_DELIVERY);
+
+        try {
+            record.setPayload(objectMapper.writeValueAsString(command));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize CreateDeliveryCommand", e);
+        }
+
+        record.setShardKey(shardUtils.calculateShard(order.getId()));
+//        int x = 1 / 0;
+        outboxRepository.save(record);
     }
 }

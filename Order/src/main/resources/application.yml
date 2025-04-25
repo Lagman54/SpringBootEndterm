@@ -8,11 +8,24 @@ spring:
       properties:
         bootstrap:
           servers: localhost:9092
-
+    producer:
+      retries: 0
+      acks: 1
+      properties:
+        request.timeout.ms: 3000        # Wait max 3s for broker response
+        delivery.timeout.ms: 5000       # Entire send operation max 5s
+        max.block.ms: 2000
   datasource:
     url: jdbc:postgresql://localhost:5432/order_db
     username: dev_user
     password: secret123
+
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://localhost:5432/order_db
+    user: dev_user
+    password: secret123
+    locations: classpath:db/migration
 
   jpa:
     hibernate:
@@ -30,6 +43,7 @@ app:
   outbox:
       totalShards: 4
       interval: 1
+      timeout: 10
 
 server:
   port: 8080

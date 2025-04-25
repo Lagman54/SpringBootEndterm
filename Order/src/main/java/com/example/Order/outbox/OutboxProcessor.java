@@ -37,6 +37,7 @@ public class OutboxProcessor {
 
     @PostConstruct
     public void schedulePollers() {
+        log.info("Starting outbox processor");
         for (int shard = 0; shard < totalShards; shard++) {
             int finalShard = shard;
             scheduler.scheduleAtFixedRate(
