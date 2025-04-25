@@ -22,7 +22,7 @@ public class DeliveryResultConverter {
         try {
             return switch (type) {
                 case "delivery.success"        -> objectMapper.readValue(payload, DeliverySuccess.class);
-                case "delivery_failed"     -> objectMapper.readValue(payload, DeliveryFailed.class);
+                case "delivery.failed"     -> objectMapper.readValue(payload, DeliveryFailed.class);
                 default -> throw new IllegalArgumentException("Unknown payment-result type: " + type);
             };
         } catch (JsonProcessingException e) {

@@ -24,11 +24,10 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(Long id, String name, Long balance, List<Payment> payments) {
+    public Customer(Long id, String name, Long balance) {
         this.id = id;
         this.name = name;
         this.balance = balance;
-        this.payments = payments;
     }
 
     public Long getId() {

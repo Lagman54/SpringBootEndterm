@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: API-gateway
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user_db
+    username: dev_user
+    password: secret123
+
+app:
+  jwt:
+    secret: "023e6c611dff64f08584b1418dc1d9cabc8a6baf6afce44d4b448b83604809e0f1fca63e52b0c8e21d4a872f247c6f19371dc18c2d2fe467341b81380ccaad8d004f390e04b7d05d0aa1b577bc7dddd888f7e6b81e00b1127582ff9039a847ef3cf7006eb60b953134bb588d2eb16af9cdfdbb4ca5a3e03729a20ed2b091891cd7ba1615c72ef7b26c87d8dfa8d57af57d90525bd9f5b5f88a3ad2aad0125f66fb5298a25f27ccdc9c6672aa8b2ee86f295216b91d54fd022efd7372981da2360ab7f1d8d3d287c080770deb439c42922737bc29cd6a7049274bd161b42c5c2808693c7fd35832628dc80e156b4511aeaf3813ea496b2045f6c3e8c5a9c910a4"
+    expire-length-milliseconds: 86400000
+
+server:
+  port: 8084
