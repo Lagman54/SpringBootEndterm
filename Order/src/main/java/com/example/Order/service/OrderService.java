@@ -19,7 +19,8 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -51,7 +52,6 @@ public class OrderService {
     @Transactional
     public Order createOrder(Order order) {
         Order savedOrder = orderRepository.save(order);
-        log.info("Received new order: {}", savedOrder);
         CustomerPayCommand command = new CustomerPayCommand(order.getCustomerId(), order.getId(), order.getOrderTotal());
 
         OutboxRecord record = new OutboxRecord();
@@ -115,4 +115,11 @@ public class OrderService {
         outboxRepository.save(record);
     }
 
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    public Optional<Order> getOrderById(Long id) {
+        return orderRepository.findById(id);
+    }
 }
