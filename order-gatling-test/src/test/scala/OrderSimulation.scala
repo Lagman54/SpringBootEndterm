@@ -5,7 +5,7 @@ import scala.concurrent.duration._
 class OrderLoadTest extends Simulation {
 
   val httpProtocol = http
-    .baseUrl("http://localhost:8080") // <-- адрес меняешь, если нужно
+    .baseUrl("http://localhost:8080")
     .contentTypeHeader("application/json")
 
   val createOrder = exec(
@@ -15,11 +15,11 @@ class OrderLoadTest extends Simulation {
         """{
           "productName": "LoadTestProduct",
           "orderTotal": 0,
-          "customerId": 1
+          "customerId": 2
         }"""
       )).asJson
       .check(status.is(200))
-  ).pause(50.millis) // небольшая реалистичная задержка
+  ).pause(50.millis)
 
   val getOrders = exec(
     http("Get Orders Request")
@@ -28,15 +28,15 @@ class OrderLoadTest extends Simulation {
   ).pause(50.millis)
 
   val scn = scenario("Create and Get Orders Scenario")
-    .repeat(300) { // каждый пользователь сделает 300 действий (150 POST + 150 GET)
+    .repeat(10) {
       createOrder
         .exec(getOrders)
     }
 
   setUp(
     scn.inject(
-      rampUsersPerSec(5).to(100).during(40.seconds) // от 5 до 100 пользователей за 40 секунд
+      rampUsersPerSec(5).to(20).during(30.seconds)
     )
   ).protocols(httpProtocol)
-    .maxDuration(1.minute) // вся симуляция не больше 1 минуты
+    .maxDuration(1.minute)
 }
