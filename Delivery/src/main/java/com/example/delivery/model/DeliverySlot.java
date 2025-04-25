@@ -20,7 +20,7 @@ public class DeliverySlot {
 
     private int quantity;
 
-    @Column(name = "max_quantity")
+    @Column(name = "capacity")
     private int maxQuantity;
 
     public DeliverySlot() {}
@@ -29,24 +29,12 @@ public class DeliverySlot {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public LocalTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalTime startTime) {
-        this.startTime = startTime;
-    }
-
     public LocalTime getEndTime() {
         return endTime;
-    }
-
-    public void setEndTime(LocalTime endTime) {
-        this.endTime = endTime;
     }
 
     public int getQuantity() {
@@ -60,15 +48,5 @@ public class DeliverySlot {
     public int getMaxQuantity() {
         return maxQuantity;
     }
-
-    public void setMaxQuantity(int maxQuantity) {
-        this.maxQuantity = maxQuantity;
-    }
-
-    //added
-
-
-
-
 
 }
