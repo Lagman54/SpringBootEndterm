@@ -28,3 +28,8 @@ app:
 
 server:
   port: 8082
+
+security:
+  jwt:
+    secret-key: qJ1RzYk8s+XyL1uEZh/6v5Q9D/A7l2fM3nT4uVc8N0Y=
+    expire-length-ms: 3600000

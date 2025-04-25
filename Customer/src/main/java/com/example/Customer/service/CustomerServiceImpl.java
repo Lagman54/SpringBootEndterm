@@ -7,11 +7,13 @@ import com.example.Customer.model.Payment;
 import com.example.Customer.model.replies.CustomerInsufficientBalance;
 import com.example.Customer.model.replies.CustomerNotFound;
 import com.example.Customer.model.replies.CustomerPaymentSuccess;
-import com.example.Customer.repo.CustomerRepository;
+import com.example.Customer.repository.CustomerRepository;
 import com.example.Customer.repository.OutboxRepository;
 import com.example.Customer.repository.PaymentRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +31,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.kafka.payment-result-topic}")
     private String paymentResultTopic;
@@ -37,17 +40,14 @@ public class CustomerServiceImpl implements CustomerService {
             PaymentRepository paymentRepository,
             CustomerRepository customerRepository,
             OutboxRepository outboxRepository,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            PasswordEncoder passwordEncoder
     ) {
         this.paymentRepository = paymentRepository;
         this.customerRepository = customerRepository;
         this.outboxRepository = outboxRepository;
         this.objectMapper = objectMapper;
-    }
-
-    @Override
-    public Customer createCustomer(Customer customer) {
-        return customerRepository.save(customer);
+        this.passwordEncoder     = passwordEncoder;
     }
 
     @Override
@@ -114,4 +114,42 @@ public class CustomerServiceImpl implements CustomerService {
         return event;
     }
 
+    @Override
+    public Customer createCustomer(Customer customer) {
+        if (customer.getName() == null || customer.getName().isBlank()) {
+            customer.setName("John");
+        }
+        // ← DEFAULT balance if none provided
+        if (customer.getBalance() == null) {
+            customer.setBalance(1000L);
+        }
+        // 1) hash the raw password
+        String raw = customer.getPassword();
+        customer.setPassword(passwordEncoder.encode(raw));
+
+        // 2) save and return the new Customer
+        return customerRepository.save(customer);
+    }
+
+    @Override
+    public Customer findByUsername(String username) {
+        return customerRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    @Override
+    public boolean checkPassword(Customer c, String rawPassword) {
+        return passwordEncoder.matches(rawPassword, c.getPassword());
+    }
+
+    @Override
+    public Customer updateCustomer(Long id, String name, Long balance) {
+        Customer c = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found: " + id));
+
+        c.setName(name);
+        c.setBalance(balance);
+        return customerRepository.save(c);
+    }
 }
