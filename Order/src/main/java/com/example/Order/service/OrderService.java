@@ -70,20 +70,35 @@ public class OrderService {
     }
 
     public void rejectOrder(Long orderId, RejectionReason rejectionReason) {
-        Order order = orderRepository.findById(orderId).get();
+        var orderOpt = orderRepository.findById(orderId);
+        if(orderOpt.isEmpty()) {
+            log.info("Received reject for non-existing order: {}", orderId);
+            return;
+        }
+        Order order = orderOpt.get();
         order.reject(rejectionReason);
         orderRepository.save(order);
     }
 
     public void approveOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId).get();
+        var orderOpt = orderRepository.findById(orderId);
+        if(orderOpt.isEmpty()) {
+            log.info("Received approve for non-existing order: {}", orderId);
+            return;
+        }
+        Order order = orderOpt.get();
         order.approve();
         orderRepository.save(order);
     }
 
     @Transactional
     public void createDelivery(Long orderId) {
-        Order order = orderRepository.findById(orderId).get();
+        var orderOpt = orderRepository.findById(orderId);
+        if(orderOpt.isEmpty()) {
+            log.info("Received delivery for non-existing order: {}", orderId);
+            return;
+        }
+        Order order = orderOpt.get();
         log.info("Create delivery request for order: {}", order);
         CreateDeliveryCommand command = new CreateDeliveryCommand(order.getCustomerId(), order.getId(), "TODO");
 
@@ -97,7 +112,7 @@ public class OrderService {
         }
 
         record.setShardKey(shardUtils.calculateShard(order.getId()));
-//        int x = 1 / 0;
         outboxRepository.save(record);
     }
+
 }

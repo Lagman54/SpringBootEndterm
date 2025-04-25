@@ -3,12 +3,14 @@ package com.example.apigateway.controller;
 import com.example.apigateway.client.CustomerClient;
 import com.example.apigateway.model.CustomerDto;
 import com.example.apigateway.model.User;
-import com.example.apigateway.model.request.AuthResponse;
+import com.example.apigateway.model.response.AuthResponse;
 import com.example.apigateway.model.request.CustomerRequest;
 import com.example.apigateway.model.request.LoginRequest;
 import com.example.apigateway.model.request.RegisterRequest;
 import com.example.apigateway.repository.UserRepository;
 import com.example.apigateway.service.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +22,7 @@ import java.util.Optional;
 @RequestMapping("/api")
 class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final UserRepository userRepository;
     private final CustomerClient customerClient;
     private final JwtService jwtService;
@@ -39,7 +42,9 @@ class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+        log.info("received request {}", request.getEmail());
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            log.info("user already registered {}", request.getEmail());
             return ResponseEntity.badRequest().build();
         }
 
@@ -48,6 +53,7 @@ class AuthController {
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
+        log.info("sending request to customer {}", request.getEmail());
         CustomerDto customer = customerClient.createCustomer(new CustomerRequest(request.getName()));
         user.setCustomerId(customer.getId());
 

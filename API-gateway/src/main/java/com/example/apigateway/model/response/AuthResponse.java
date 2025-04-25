@@ -1,4 +1,4 @@
-package com.example.apigateway.model.request;
+package com.example.apigateway.model.response;
 
 public class AuthResponse {
     private final String token;

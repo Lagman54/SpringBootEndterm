@@ -4,6 +4,8 @@ public class OrderRequest {
     private String productName;
     private Double orderTotal;
 
+    public OrderRequest() {}
+
     public String getProductName() {
         return productName;
     }

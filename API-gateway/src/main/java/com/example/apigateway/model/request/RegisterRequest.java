@@ -5,6 +5,10 @@ public class RegisterRequest {
     private String password;
     private String name;
 
+    public RegisterRequest() {
+
+    }
+
     public void setEmail(String email) {
         this.email = email;
     }

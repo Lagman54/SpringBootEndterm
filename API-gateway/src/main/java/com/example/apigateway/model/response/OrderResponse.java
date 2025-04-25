@@ -1,17 +1,21 @@
-package com.example.apigateway.model;
+package com.example.apigateway.model.response;
 
-public class OrderDto {
+public class OrderResponse {
+    private Long id;
     private String productName;
     private Double orderTotal;
     private Long customerId;
 
-    public OrderDto() {}
+    public OrderResponse() {}
 
-    public OrderDto(String productName, Double orderTotal, Long customerId) {
-        this.productName = productName;
-        this.orderTotal = orderTotal;
-        this.customerId = customerId;
+    public Long getId() {
+        return id;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setProductName(String productName) {
         this.productName = productName;
     }
