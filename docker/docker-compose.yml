@@ -27,11 +27,12 @@ services:
 
 
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: postgres
     environment:
       POSTGRES_USER: dev_user
       POSTGRES_PASSWORD: secret123
+      POSTGRES_DATABASE: postgres
     volumes:
       - ./postgres-init/:/docker-entrypoint-initdb.d/
     ports:
@@ -116,4 +117,3 @@ services:
       SPRING_FLYWAY_USER: dev_user
       SPRING_FLYWAY_PASSWORD: secret123
       SPRING.DATASOURCE.HIKARI.INITIALIZATION-FAIL-TIMEOUT: 30000
-
