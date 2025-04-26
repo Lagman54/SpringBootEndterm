@@ -28,7 +28,7 @@ class OrderLightLoadTest extends Simulation {
   ).pause(200.millis)
 
   val scn = scenario("Light Create and Get Orders Scenario")
-    .repeat(5) {
+    .repeat(100) {
       createOrder
         .exec(getOrders)
     }

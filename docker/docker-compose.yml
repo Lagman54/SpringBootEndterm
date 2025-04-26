@@ -21,6 +21,99 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: false
+
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: secret123
+    volumes:
+      - ./postgres-init/:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+
+  order-service:
+    container_name: order-service
+    build:
+      context: ../Order
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/order_db
+      SPRING_DATASOURCE_USERNAME: dev_user
+      SPRING_DATASOURCE_PASSWORD: secret123
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/order_db
+      SPRING_FLYWAY_USER: dev_user
+      SPRING_FLYWAY_PASSWORD: secret123
+      SPRING.DATASOURCE.HIKARI.INITIALIZATION-FAIL-TIMEOUT: 30000
+
+  customer-service:
+    container_name: customer-service
+    build:
+      context: ../Customer
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/customer_db
+      SPRING_DATASOURCE_USERNAME: dev_user
+      SPRING_DATASOURCE_PASSWORD: secret123
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/customer_db
+      SPRING_FLYWAY_USER: dev_user
+      SPRING_FLYWAY_PASSWORD: secret123
+      SPRING.DATASOURCE.HIKARI.INITIALIZATION-FAIL-TIMEOUT: 30000
+
+  delivery-service:
+    container_name: delivery-service
+    build:
+      context: ../Delivery
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/delivery_db
+      SPRING_DATASOURCE_USERNAME: dev_user
+      SPRING_DATASOURCE_PASSWORD: secret123
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/delivery_db
+      SPRING_FLYWAY_USER: dev_user
+      SPRING_FLYWAY_PASSWORD: secret123
+      SPRING.DATASOURCE.HIKARI.INITIALIZATION-FAIL-TIMEOUT: 30000
+
+  gateway-service:
+    container_name: gateway-service
+    build:
+      context: ../API-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_db
+      SPRING_DATASOURCE_USERNAME: dev_user
+      SPRING_DATASOURCE_PASSWORD: secret123
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/user_db
+      SPRING_FLYWAY_USER: dev_user
+      SPRING_FLYWAY_PASSWORD: secret123
+      SPRING.DATASOURCE.HIKARI.INITIALIZATION-FAIL-TIMEOUT: 30000
+

@@ -37,7 +37,7 @@ public class OrderController {
     /**
      * Base URL of the Order service; override in application.properties if needed
      */
-    @Value("${order.service.base-url:http://localhost:8080}")
+    @Value("${order.service.base-url:http://order-service:8080}")
     private String orderServiceBaseUrl;
 
     public OrderController(JwtService jwtService) {
