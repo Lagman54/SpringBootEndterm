@@ -2,7 +2,7 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
 
-class OrderLoadTest extends Simulation {
+class OrderLightLoadTest extends Simulation {
 
   val httpProtocol = http
     .baseUrl("http://localhost:8080")
@@ -13,30 +13,30 @@ class OrderLoadTest extends Simulation {
       .post("/api/orders")
       .body(StringBody(
         """{
-          "productName": "LoadTestProduct",
+          "productName": "LightLoadProduct",
           "orderTotal": 0,
-          "customerId": 2
+          "customerId": 1
         }"""
       )).asJson
       .check(status.is(200))
-  ).pause(50.millis)
+  ).pause(200.millis)
 
   val getOrders = exec(
     http("Get Orders Request")
       .get("/api/orders")
       .check(status.is(200))
-  ).pause(50.millis)
+  ).pause(200.millis)
 
-  val scn = scenario("Create and Get Orders Scenario")
-    .repeat(10) {
+  val scn = scenario("Light Create and Get Orders Scenario")
+    .repeat(5) {
       createOrder
         .exec(getOrders)
     }
 
   setUp(
     scn.inject(
-      rampUsersPerSec(5).to(20).during(30.seconds)
+      rampUsers(10) during (30.seconds)
     )
   ).protocols(httpProtocol)
-    .maxDuration(1.minute)
+    .maxDuration(30.seconds)
 }
